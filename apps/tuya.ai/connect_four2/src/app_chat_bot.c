@@ -177,6 +177,7 @@ int check_for_match(uint8_t *buffer, size_t buflen, const char *pattern)
 void serial_print(const char *msg)
 {
     tal_uart_write(USER_TEXT_UART, (uint8_t *)msg, strlen(msg));
+    tal_uart_write(USER_TEXT_UART, (uint8_t *)"\n", 1);
 }
 
 /***********************************************************
@@ -252,22 +253,21 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
 
         tal_uart_write(USER_TEXT_UART, data, len);
         if (game.state == WAIT_FOR_START) {
-            if ((index = check_for_match(data, len, "<Ready to Play>")) >= 0) {
+            if ((index = check_for_match(data, len, "|Ready to Play|")) >= 0) {
                 game.state = USER_TURN;
-                serial_print("\n\nGame Started");
+                serial_print("\n\nGame Started\n");
             }
         } else if (game.state == CHATBOT_TURN) {
-            if ((index = check_for_match(data, len, "col:")) >= 0) {
-                col = data[index + strlen("col:")] - '0';
+            if ((index = check_for_match(data, len, "COLUMN:")) >= 0) {
+                col = data[index + strlen("COLUMN:")] - '0';
                 if (dropPiece(&game, col)) {
                     char board_str[256] = {0};
                     exportBoardToString(&game, board_str);
                     tal_uart_write(USER_TEXT_UART, (uint8_t *)board_str, sizeof(board_str));
                 } else {
-                    serial_print("Invalid Move by Chatbot");
+                    serial_print("Invalid Move by Chatbot\n");
                 }
             }
-            serial_print("Invalid Move by Chatbot");
         }
 #endif
 #else
@@ -361,7 +361,7 @@ void __uart_text_scan_task(void *arg)
         switch (game.state) {
         case WAIT_FOR_START: {
             if ((index = check_for_match(_serial_text_buf, len, "start")) >= 0) {
-                serial_print("Start Message Sent");
+                serial_print("Start Message Sent\n");
                 ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
             }
             break;

@@ -34,12 +34,12 @@ static const uint8_t prompt_data[] =
     "Your Instructions:\n"
     "- Analyze the current state. Look for immediate threats or opportunities.\n"
     "- Think step-by-step: 'If I play in column [N], what happens?'\n"
-    "- Output your move clearly as: col:[Column Number].\n"
+    "- Output your move clearly as: COLUMN:[Column Number].\n"
     "- Briefly explain your reasoning.\n\n"
     "The Board Format:\n"
     "Rows are 0 (top) to 5 (bottom). Columns are 0 (left) to 6 (right).\n"
     "Empty cells: '.', Player 1: 'X', Player 2: 'O'.\n\n"
     "Here is the current board:\n"
-    "Respond with <Ready to Play> when you understand the rules and are ready to start the game.";
+    "Respond with |Ready to Play| when you understand the rules and are ready to start the game.";
 
 #endif

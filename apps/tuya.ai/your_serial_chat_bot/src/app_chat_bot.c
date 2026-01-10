@@ -19,7 +19,7 @@
 /***********************************************************
 ***********************typedef define***********************
 ***********************************************************/
-THREAD_HANDLE sg_ai_text_hdl = NULL;
+THREAD_HANDLE  sg_ai_text_hdl        = NULL;
 static uint8_t _serial_text_buf[256] = {0};
 /***********************************************************
 ***********************const declaration********************
@@ -104,24 +104,24 @@ void __uart_text_scan_task(void *arg)
 }
 OPERATE_RET app_chat_bot_init(void)
 {
-    OPERATE_RET rt = OPRT_OK;
+    OPERATE_RET       rt = OPRT_OK;
     AI_AUDIO_CONFIG_T ai_audio_cfg;
 
-    ai_audio_cfg.work_mode = AI_AUDIO_WORK_ASR_WAKEUP_FREE_TALK;
-    ai_audio_cfg.evt_inform_cb = __app_ai_audio_evt_inform_cb;
+    ai_audio_cfg.work_mode       = AI_AUDIO_WORK_ASR_WAKEUP_FREE_TALK;
+    ai_audio_cfg.evt_inform_cb   = __app_ai_audio_evt_inform_cb;
     ai_audio_cfg.state_inform_cb = __app_ai_audio_state_inform_cb;
 
-    TAL_UART_CFG_T uart_cfg = {0};
+    TAL_UART_CFG_T uart_cfg    = {0};
     uart_cfg.base_cfg.baudrate = 115200;
     uart_cfg.base_cfg.databits = TUYA_UART_DATA_LEN_8BIT;
     uart_cfg.base_cfg.stopbits = TUYA_UART_STOP_LEN_1BIT;
-    uart_cfg.base_cfg.parity = TUYA_UART_PARITY_TYPE_NONE;
-    uart_cfg.rx_buffer_size = 512;
-    uart_cfg.open_mode = O_BLOCK;
+    uart_cfg.base_cfg.parity   = TUYA_UART_PARITY_TYPE_NONE;
+    uart_cfg.rx_buffer_size    = 512;
+    uart_cfg.open_mode         = O_BLOCK;
     tal_uart_init(USER_TEXT_UART, &uart_cfg);
 
     TUYA_CALL_ERR_RETURN(tkl_thread_create_in_psram(&sg_ai_text_hdl, "uart_text_handle", 1024 * 4, THREAD_PRIO_1,
-                                                  __uart_text_scan_task, NULL));
+                                                    __uart_text_scan_task, NULL));
     TUYA_CALL_ERR_RETURN(ai_audio_init(&ai_audio_cfg));
 
     return OPRT_OK;
