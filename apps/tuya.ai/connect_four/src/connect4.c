@@ -1,6 +1,7 @@
 #include "connect4.h"
 #include <stdio.h>
 #include <string.h>
+#include "app_chat_bot.h"
 
 void initGame(Connect4Game *game)
 {
@@ -25,9 +26,32 @@ int dropPiece(Connect4Game *game, int col)
         if (game->board[i][col] == EMPTY) {
             game->board[i][col] = game->currentPlayer;
             game->movesMade++;
+
+            if (checkWin(game)) {
+                game->state = (game->currentPlayer == USER) ? USER_WIN : CHATBOT_WIN;
+                if (game->currentPlayer == USER) {
+                    serial_print("You win!");
+                } else {
+                    serial_print("Chatbot wins!");
+                }
+                game->state = WAIT_FOR_START;
+            } else if (isBoardFull(game)) {
+                game->state = DRAW;
+                serial_print("It's a draw!");
+                game->state = WAIT_FOR_START;
+            } else {
+                game->currentPlayer = (game->currentPlayer == USER) ? CHATBOT : USER;
+                game->state         = (game->currentPlayer == USER) ? USER_TURN : CHATBOT_TURN;
+                if (game->currentPlayer == USER) {
+                    serial_print("Your turn.");
+                } else {
+                    serial_print("Chatbot's turn.");
+                }
+            }
             return 1; // Success
         }
     }
+    serial_print("Column is full.");
     return 0; // Column full
 }
 

@@ -51,31 +51,23 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
     } break;
     case AI_AUDIO_EVT_AI_REPLIES_TEXT_DATA: {
         tal_uart_write(USER_TEXT_UART, data, len);
-        if (game.state == CHATBOT_TURN) {
+        if (game.state == WAIT_FOR_START) {
+            if ((index = check_for_match(data, len, "<Ready to Play>")) >= 0) {
+                game.state = USER_TURN;
+                serial_print("\n\nGame Started");
+            }
+        } else if (game.state == CHATBOT_TURN) {
             if ((index = check_for_match(data, len, "col:")) >= 0) {
                 col = data[index + strlen("col:")] - '0';
-
-                // Parse chatbot move from data
-                if (col >= 0 && col < COLS) {
-                    if (dropPiece(&game, col)) {
-                        char board_str[256] = {0};
-                        exportBoardToString(&game, board_str);
-                        ai_text_agent_upload((uint8_t *)board_str, strlen(board_str));
-                        if (checkWin(&game)) {
-                            game.state         = GAME_OVER;
-                            char win_message[] = "Chatbot wins!";
-                            tal_uart_write(USER_TEXT_UART, (uint8_t *)win_message, sizeof(win_message));
-                        } else if (isBoardFull(&game)) {
-                            game.state          = GAME_OVER;
-                            char draw_message[] = "It's a draw!";
-                            tal_uart_write(USER_TEXT_UART, (uint8_t *)draw_message, sizeof(draw_message));
-                        } else {
-                            game.currentPlayer = USER;
-                            game.state         = USER_TURN;
-                        }
-                    }
+                if (dropPiece(&game, col)) {
+                    char board_str[256] = {0};
+                    exportBoardToString(&game, board_str);
+                    tal_uart_write(USER_TEXT_UART, (uint8_t *)board_str, sizeof(board_str));
+                } else {
+                    serial_print("Invalid Move by Chatbot");
                 }
             }
+            serial_print("Invalid Move by Chatbot");
         }
 
     } break;
@@ -143,6 +135,11 @@ int check_for_match(uint8_t *buffer, size_t buflen, const char *pattern)
     return -1; // No match
 }
 
+void serial_print(const char *msg)
+{
+    tal_uart_write(USER_TEXT_UART, (uint8_t *)msg, strlen(msg));
+}
+
 void __uart_text_scan_task(void *arg)
 {
     static int init = 0;
@@ -158,10 +155,8 @@ void __uart_text_scan_task(void *arg)
         switch (game.state) {
         case WAIT_FOR_START: {
             if ((index = check_for_match(_serial_text_buf, len, "start")) >= 0) {
-                char message[256] = "START RXED";
-                tal_uart_write(USER_TEXT_UART, (uint8_t *)message, sizeof(message));
+                serial_print("Start Message Sent");
                 ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
-                game.state = USER_TURN;
             }
             break;
         }
@@ -173,18 +168,6 @@ void __uart_text_scan_task(void *arg)
                     exportBoardToString(&game, board_str);
                     tal_uart_write(USER_TEXT_UART, (uint8_t *)board_str, sizeof(board_str));
                     ai_text_agent_upload((uint8_t *)board_str, strlen(board_str));
-                    if (checkWin(&game)) {
-                        game.state         = GAME_OVER;
-                        char win_message[] = "You win!";
-                        tal_uart_write(USER_TEXT_UART, (uint8_t *)win_message, sizeof(win_message));
-                    } else if (isBoardFull(&game)) {
-                        game.state          = GAME_OVER;
-                        char draw_message[] = "It's a draw!";
-                        tal_uart_write(USER_TEXT_UART, (uint8_t *)draw_message, sizeof(draw_message));
-                    } else {
-                        game.currentPlayer = CHATBOT;
-                        game.state         = CHATBOT_TURN;
-                    }
                 }
             }
             break;
@@ -193,11 +176,20 @@ void __uart_text_scan_task(void *arg)
             // Waiting for chatbot to respond via ai_audio callback
             break;
         }
-        case GAME_OVER: {
+        case USER_WIN: {
+            // Game over, wait for reset
+            break;
+        }
+        case CHATBOT_WIN: {
+            // Game over, wait for reset
+            break;
+        }
+        case DRAW: {
             // Game over, wait for reset
             break;
         }
         }
+
         tal_system_sleep(100);
     }
 }

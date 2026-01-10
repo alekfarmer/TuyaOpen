@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-typedef enum { WAIT_FOR_START, USER_TURN, CHATBOT_TURN, GAME_OVER } GameState;
+typedef enum { WAIT_FOR_START, USER_TURN, CHATBOT_TURN, USER_WIN, CHATBOT_WIN, DRAW } GameState;
 typedef enum { EMPTY = 0, USER = 1, CHATBOT = 2 } Cell;
 
 typedef struct {
@@ -39,5 +39,7 @@ static const uint8_t prompt_data[] =
     "The Board Format:\n"
     "Rows are 0 (top) to 5 (bottom). Columns are 0 (left) to 6 (right).\n"
     "Empty cells: '.', Player 1: 'X', Player 2: 'O'.\n\n"
-    "Here is the current board:\n";
+    "Here is the current board:\n"
+    "Respond with <Ready to Play> when you understand the rules and are ready to start the game.";
+
 #endif

@@ -54,7 +54,7 @@ uint8_t app_chat_bot_get_enable(void);
  */
 OPERATE_RET ai_audio_player_play_alert(AI_AUDIO_ALERT_TYPE_E type);
 int         check_for_match(uint8_t *buffer, size_t buflen, const char *pattern);
-
+void        serial_print(const char *msg);
 #ifdef __cplusplus
 }
 #endif
