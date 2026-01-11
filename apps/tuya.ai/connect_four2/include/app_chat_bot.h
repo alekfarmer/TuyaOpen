@@ -9,6 +9,7 @@
 #define __APP_CHAT_BOT_H__
 
 #include "tuya_cloud_types.h"
+#include "connect4.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,6 +39,12 @@ typedef enum {
     AI_AUDIO_ALERT_WAKEUP_TALK,
     AI_AUDIO_ALERT_FREE_TALK,
 } AI_AUDIO_ALERT_TYPE_E;
+
+/***********************************************************
+*******************varible definition***********************
+***********************************************************/
+
+extern Connect4Game game;
 
 /***********************************************************
 ********************function declaration********************

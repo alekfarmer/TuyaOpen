@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "app_chat_bot.h"
-#include "ai_audio.h"
 
 void initGame(Connect4Game *game)
 {
@@ -26,13 +25,15 @@ int dropPiece(Connect4Game *game, int col)
     // Check from bottom up for the first empty spot
     for (int i = ROWS - 1; i >= 0; i--) {
         if (game->board[i][col] == EMPTY) {
-            game->board[i][col] = game->currentPlayer;
+            setPiece(game, i, col, game->currentPlayer);
             game->movesMade++;
 
             exportBoardToString(game, board_str);
             serial_print(board_str);
 
-            if (checkWin(game)) {
+            CellPos p0, p3;
+            if (checkWin(game, &p0, &p3)) {
+                highlight_winning_pieces(&p0, &p3);
                 game->state = (game->currentPlayer == USER) ? USER_WIN : CHATBOT_WIN;
                 if (game->currentPlayer == USER) {
                     serial_print("I win!");
@@ -45,8 +46,6 @@ int dropPiece(Connect4Game *game, int col)
             } else if (isBoardFull(game)) {
                 game->state = DRAW;
                 serial_print("It's a draw!");
-                ai_text_agent_upload((uint8_t *)"It's a draw!", sizeof("It's a draw!"));
-
                 game->state = WAIT_FOR_START;
             } else {
                 game->currentPlayer = (game->currentPlayer == USER) ? CHATBOT : USER;
@@ -65,7 +64,23 @@ int dropPiece(Connect4Game *game, int col)
     return 0; // Column full
 }
 
-int checkWin(Connect4Game *game)
+int setPiece(Connect4Game *game, int row, int col, Cell player)
+{
+    // PR_DEBUG("setPiece: Setting piece at (%d, %d) to player %d", row, col, player);
+    // Sets the new player information and updates the graphics
+    game->board[row][col] = player;
+
+    // graphics update
+    lv_obj_t* piece = get_piece_lv_obj(row, col);
+    gfx_update_piece_to_player(piece, player);
+    
+    // char boardStr[ROWS * COLS * 3 + ROWS + 1] = {0}; // Enough space for board representation
+    // exportBoardToString(game, boardStr);
+    // PR_DEBUG("%s", boardStr);
+    return 0;
+}
+
+int checkWin(Connect4Game *game, CellPos* p0, CellPos* p3)
 {
     Cell p = game->currentPlayer;
 
@@ -75,22 +90,34 @@ int checkWin(Connect4Game *game)
                 continue;
 
             // Check Horizontal
-            if (c + 3 < COLS && game->board[r][c + 1] == p && game->board[r][c + 2] == p && game->board[r][c + 3] == p)
+            if (c + 3 < COLS && game->board[r][c + 1] == p && game->board[r][c + 2] == p && game->board[r][c + 3] == p) {
+                if (p0) *p0 = (CellPos){r, c};
+                if (p3) *p3 = (CellPos){r, c + 3};
                 return 1;
+            }
 
             // Check Vertical
-            if (r + 3 < ROWS && game->board[r + 1][c] == p && game->board[r + 2][c] == p && game->board[r + 3][c] == p)
+            if (r + 3 < ROWS && game->board[r + 1][c] == p && game->board[r + 2][c] == p && game->board[r + 3][c] == p) {
+                if (p0) *p0 = (CellPos){r, c};
+                if (p3) *p3 = (CellPos){r + 3, c};
                 return 1;
+            }
 
             // Check Diagonal (Down-Right)
             if (r + 3 < ROWS && c + 3 < COLS && game->board[r + 1][c + 1] == p && game->board[r + 2][c + 2] == p &&
-                game->board[r + 3][c + 3] == p)
+                game->board[r + 3][c + 3] == p) {
+                if (p0) *p0 = (CellPos){r, c};
+                if (p3) *p3 = (CellPos){r + 3, c + 3};
                 return 1;
+            }
 
             // Check Diagonal (Up-Right)
             if (r - 3 >= 0 && c + 3 < COLS && game->board[r - 1][c + 1] == p && game->board[r - 2][c + 2] == p &&
-                game->board[r - 3][c + 3] == p)
+                game->board[r - 3][c + 3] == p) {
+                if (p0) *p0 = (CellPos){r, c};
+                if (p3) *p3 = (CellPos){r - 3, c + 3};
                 return 1;
+            }
         }
     }
     return 0;

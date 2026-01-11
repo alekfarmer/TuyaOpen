@@ -16,10 +16,16 @@ typedef struct {
     int       movesMade;
 } Connect4Game;
 
+typedef struct {
+    int row;
+    int col;
+} CellPos;
+
 // Function prototypes
 void initGame(Connect4Game *game);
 int  dropPiece(Connect4Game *game, int col);
-int  checkWin(Connect4Game *game);
+int  setPiece(Connect4Game *game, int row, int col, Cell player);
+int  checkWin(Connect4Game *game, CellPos* p0, CellPos* p3);
 int  isBoardFull(Connect4Game *game);
 
 void exportBoardToString(Connect4Game *game, char *buffer);
