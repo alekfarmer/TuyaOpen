@@ -1,7 +1,9 @@
 #include "connect4.h"
+#include "board_display.h"
 #include <stdio.h>
 #include <string.h>
 #include "app_chat_bot.h"
+#include "ai_audio_agent.h"
 
 void initGame(Connect4Game *game)
 {

@@ -186,8 +186,8 @@ void serial_print(const char *msg)
 ***********************************************************/
 static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, uint32_t len, void *arg)
 {
-    // int index = 0;
-    // int col   = 0;
+    int index = 0;
+    int col   = 0;
 #if (defined(ENABLE_CHAT_DISPLAY) && (ENABLE_CHAT_DISPLAY == 1)) ||                                                    \
     (defined(ENABLE_CHAT_DISPLAY2) && (ENABLE_CHAT_DISPLAY2 == 1))
 
