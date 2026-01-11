@@ -335,6 +335,8 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
         PR_DEBUG("ai audio alert: %d", type);
         if (type == AT_NETWORK_CONNECTED) {
             ai_audio_player_play_alert(AI_AUDIO_ALERT_NETWORK_CONNECTED);
+            initGame(&game);
+            ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
         }
     } break;
 
