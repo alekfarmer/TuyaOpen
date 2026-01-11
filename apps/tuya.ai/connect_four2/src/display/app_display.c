@@ -270,6 +270,14 @@ OPERATE_RET app_display_init(void)
 {
     OPERATE_RET rt = OPRT_OK;
 
+    /**
+     * @brief Clears (sets to zero) all fields of the global display structure.
+     *
+     * This line initializes the 'sg_display' variable by setting all its bytes to zero,
+     * effectively resetting the structure to its default state. It uses the 'memset'
+     * function to fill the memory occupied by 'sg_display' with zeros, ensuring that
+     * all fields within the 'TUYA_DISPLAY_T' structure are cleared before use.
+     */
     memset(&sg_display, 0, sizeof(TUYA_DISPLAY_T));
 
     // lvgl initialization

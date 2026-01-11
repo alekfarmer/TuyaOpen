@@ -98,6 +98,10 @@ if (CONFIG_ENABLE_CHAT_DISPLAY STREQUAL "y")
     add_subdirectory(${APP_PATH}/src/display)
 endif()
 
+if (CONFIG_ENABLE_CONNECT_FOUR_BOARD STREQUAL "y")
+    add_subdirectory(${APP_PATH}/src/display)
+endif()
+
 if (CONFIG_ENABLE_CHAT_DISPLAY2 STREQUAL "y")
     add_subdirectory(${APP_PATH}/src/display2)
 endif()

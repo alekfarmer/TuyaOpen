@@ -52,6 +52,9 @@ choice
 
     config ENABLE_CHAT_DISPLAY2
         bool "Use DISPLAY2 module"
+
+    config ENABLE_CONNECT_FOUR_BOARD
+        bool "Display the Connect Four board"
 endchoice
 
 if (ENABLE_CHAT_DISPLAY)

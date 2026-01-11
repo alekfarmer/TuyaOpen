@@ -24,6 +24,7 @@
 #endif
 
 #include "app_display.h"
+#include "board_display.h"
 
 #if defined(ENABLE_EX_MODULE_CAMERA) && (ENABLE_EX_MODULE_CAMERA == 1)
 #include "app_camera.h"
@@ -675,6 +676,10 @@ OPERATE_RET app_chat_bot_init(void)
 #if (defined(ENABLE_CHAT_DISPLAY) && (ENABLE_CHAT_DISPLAY == 1)) ||                                                    \
     ((defined(ENABLE_CHAT_DISPLAY2) && (ENABLE_CHAT_DISPLAY2 == 1)))
     TUYA_CALL_ERR_LOG(app_display_init());
+#endif
+#if (defined(ENABLE_CONNECT_FOUR_BOARD) && (ENABLE_CONNECT_FOUR_BOARD == 1))
+    serial_print("Connect Four Graphics Initialized!\n");
+    TUYA_CALL_ERR_LOG(board_display_init());
 #endif
 
 #if defined(ENABLE_EX_MODULE_CAMERA) && (ENABLE_EX_MODULE_CAMERA == 1)
