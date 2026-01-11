@@ -18,6 +18,13 @@ void initGame(Connect4Game *game)
     clear_board();
 }
 
+static void start_next_game(lv_timer_t *timer)
+{
+    game.state = WAIT_FOR_START;
+    initGame(&game);
+    ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
+}
+
 int dropPiece(Connect4Game *game, int col)
 {
     static char board_str[256] = {0};
@@ -45,22 +52,36 @@ int dropPiece(Connect4Game *game, int col)
                     ai_text_agent_upload((uint8_t *)"Chatbot wins", sizeof("Chatbot wins"));
                     serial_print("Chatbot wins!");
                 }
-                game->state = WAIT_FOR_START;
 
-                initGame(game);
-                ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
+                // call the start new game timer after 5 seconds
+                static lv_timer_t *restart_timer = NULL;
+                if (restart_timer) {
+                    lv_timer_del(restart_timer);
+                }
+                restart_timer = lv_timer_create(start_next_game, 5000, game);
+                lv_timer_set_repeat_count(restart_timer, 1); // Fire only once
+
             } else if (isBoardFull(game)) {
                 game->state = DRAW;
                 serial_print("It's a draw!");
-                game->state = WAIT_FOR_START;
-                initGame(game);
-                ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
+
+                // call the start new game timer after 5 seconds
+                static lv_timer_t *restart_timer = NULL;
+                if (restart_timer) {
+                    lv_timer_del(restart_timer);
+                }
+                restart_timer = lv_timer_create(start_next_game, 5000, game);
+                lv_timer_set_repeat_count(restart_timer, 1); // Fire only once
             } else {
                 game->currentPlayer = (game->currentPlayer == USER) ? CHATBOT : USER;
                 game->state         = (game->currentPlayer == USER) ? USER_TURN : CHATBOT_TURN;
                 if (game->currentPlayer == USER) {
                     serial_print("Your turn.");
                 } else {
+                    // add msg to the board string so that I can send in one upload
+                    char msg[] = "Chatbot's turn. Game is not over yet.";
+                    strcat(board_str, msg);
+
                     ai_text_agent_upload((uint8_t *)board_str, strlen(board_str));
                     serial_print("Chatbot's turn.");
                 }
