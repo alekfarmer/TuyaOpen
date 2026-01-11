@@ -25,6 +25,11 @@ static void start_next_game(lv_timer_t *timer)
     ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
 }
 
+static void tell_chat_it_finished(lv_timer_t *timer)
+{
+    ai_text_agent_upload((uint8_t *)"Chatbot wins", sizeof("Chatbot wins"));
+}
+
 int dropPiece(Connect4Game *game, int col)
 {
     static char board_str[256] = {0};
@@ -49,8 +54,14 @@ int dropPiece(Connect4Game *game, int col)
                     serial_print("I win!");
                     ai_text_agent_upload((uint8_t *)"I win", sizeof("I win"));
                 } else {
-                    ai_text_agent_upload((uint8_t *)"Chatbot wins", sizeof("Chatbot wins"));
                     serial_print("Chatbot wins!");
+                    // call the start new game timer after 5 seconds
+                    static lv_timer_t *over_timer = NULL;
+                    if (over_timer) {
+                        lv_timer_del(over_timer);
+                    }
+                    over_timer = lv_timer_create(tell_chat_it_finished, 5000, game);
+                    lv_timer_set_repeat_count(over_timer, 1); // Fire only once
                 }
 
                 // call the start new game timer after 5 seconds
