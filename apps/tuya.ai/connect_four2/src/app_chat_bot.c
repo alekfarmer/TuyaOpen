@@ -190,6 +190,7 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
     int col   = 0;
 #if (defined(ENABLE_CHAT_DISPLAY) && (ENABLE_CHAT_DISPLAY == 1)) ||                                                    \
     (defined(ENABLE_CHAT_DISPLAY2) && (ENABLE_CHAT_DISPLAY2 == 1))
+
 #if !defined(ENABLE_GUI_STREAM_AI_TEXT) || (ENABLE_GUI_STREAM_AI_TEXT != 1)
     static uint8_t *p_ai_text   = NULL;
     static uint32_t ai_text_len = 0;
@@ -241,6 +242,7 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
     case AI_AUDIO_EVT_AI_REPLIES_TEXT_DATA: {
 #if (defined(ENABLE_CHAT_DISPLAY) && (ENABLE_CHAT_DISPLAY == 1)) ||                                                    \
     (defined(ENABLE_CHAT_DISPLAY2) && (ENABLE_CHAT_DISPLAY2 == 1))
+
 #if defined(ENABLE_GUI_STREAM_AI_TEXT) && (ENABLE_GUI_STREAM_AI_TEXT == 1)
         app_display_send_msg(TY_DISPLAY_TP_ASSISTANT_MSG_STREAM_DATA, data, len);
 #else
@@ -252,6 +254,10 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
             ai_text_len = 0;
         }
 
+#endif
+#else
+        PR_NOTICE("AI: %.*s", len, data);
+#endif
         tal_uart_write(USER_TEXT_UART, data, len);
         if (game.state == WAIT_FOR_START) {
             if ((index = check_for_match(data, len, "|Ready to Play|")) >= 0) {
@@ -266,10 +272,6 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
                 }
             }
         }
-#endif
-#else
-        PR_NOTICE("AI: %.*s", len, data);
-#endif
     } break;
     case AI_AUDIO_EVT_AI_REPLIES_TEXT_END: {
 #if (defined(ENABLE_CHAT_DISPLAY) && (ENABLE_CHAT_DISPLAY == 1)) ||                                                    \
