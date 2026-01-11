@@ -30,6 +30,7 @@ static const uint8_t prompt_data[] =
     "1. The board is a grid of 6 rows and 7 columns.\n"
     "2. We take turns dropping a piece into one of the 7 columns (0-6).\n"
     "3. The goal is to get four of your pieces in a row (horizontally, vertically, or diagonally).\n"
+    "EMPHASIS ON 4 IN A ROW!\n"
     "4. After every move I make, I will send you the current state of the board.\n\n"
     "Your Instructions:\n"
     "- Analyze the current state. Look for immediate threats or opportunities.\n"

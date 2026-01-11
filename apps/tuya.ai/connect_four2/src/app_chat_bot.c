@@ -261,11 +261,7 @@ static void __app_ai_audio_evt_inform_cb(AI_AUDIO_EVENT_E event, uint8_t *data, 
         } else if (game.state == CHATBOT_TURN) {
             if ((index = check_for_match(data, len, "COLUMN:")) >= 0) {
                 col = data[index + strlen("COLUMN:")] - '0';
-                if (dropPiece(&game, col)) {
-                    char board_str[256] = {0};
-                    exportBoardToString(&game, board_str);
-                    tal_uart_write(USER_TEXT_UART, (uint8_t *)board_str, sizeof(board_str));
-                } else {
+                if (!dropPiece(&game, col)) {
                     serial_print("Invalid Move by Chatbot\n");
                 }
             }
@@ -363,6 +359,7 @@ void __uart_text_scan_task(void *arg)
         case WAIT_FOR_START: {
             if ((index = check_for_match(_serial_text_buf, len, "start")) >= 0) {
                 serial_print("Start Message Sent\n");
+                initGame(&game);
                 ai_text_agent_upload((uint8_t *)prompt_data, sizeof(prompt_data));
             }
             break;
@@ -370,11 +367,8 @@ void __uart_text_scan_task(void *arg)
         case USER_TURN: {
             if ((index = check_for_match(_serial_text_buf, len, "col")) >= 0) {
                 int col = _serial_text_buf[index + strlen("col")] - '0';
-                if (dropPiece(&game, col)) {
-                    char board_str[256] = {0};
-                    exportBoardToString(&game, board_str);
-                    tal_uart_write(USER_TEXT_UART, (uint8_t *)board_str, sizeof(board_str));
-                    ai_text_agent_upload((uint8_t *)board_str, strlen(board_str));
+                if (!dropPiece(&game, col)) {
+                    serial_print("Invalid Move by User\n");
                 }
             }
             break;

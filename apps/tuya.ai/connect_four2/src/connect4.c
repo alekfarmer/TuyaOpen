@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "app_chat_bot.h"
+#include "ai_audio.h"
 
 void initGame(Connect4Game *game)
 {
@@ -17,6 +18,7 @@ void initGame(Connect4Game *game)
 
 int dropPiece(Connect4Game *game, int col)
 {
+    static char board_str[256] = {0};
     if (col < 0 || col >= COLS) {
         return 0; // Invalid column
     }
@@ -27,17 +29,24 @@ int dropPiece(Connect4Game *game, int col)
             game->board[i][col] = game->currentPlayer;
             game->movesMade++;
 
+            exportBoardToString(game, board_str);
+            serial_print(board_str);
+
             if (checkWin(game)) {
                 game->state = (game->currentPlayer == USER) ? USER_WIN : CHATBOT_WIN;
                 if (game->currentPlayer == USER) {
-                    serial_print("You win!");
+                    serial_print("I win!");
+                    ai_text_agent_upload((uint8_t *)"I win", sizeof("I win"));
                 } else {
+                    ai_text_agent_upload((uint8_t *)"Chatbot wins", sizeof("Chatbot wins"));
                     serial_print("Chatbot wins!");
                 }
                 game->state = WAIT_FOR_START;
             } else if (isBoardFull(game)) {
                 game->state = DRAW;
                 serial_print("It's a draw!");
+                ai_text_agent_upload((uint8_t *)"It's a draw!", sizeof("It's a draw!"));
+
                 game->state = WAIT_FOR_START;
             } else {
                 game->currentPlayer = (game->currentPlayer == USER) ? CHATBOT : USER;
@@ -45,6 +54,7 @@ int dropPiece(Connect4Game *game, int col)
                 if (game->currentPlayer == USER) {
                     serial_print("Your turn.");
                 } else {
+                    ai_text_agent_upload((uint8_t *)board_str, strlen(board_str));
                     serial_print("Chatbot's turn.");
                 }
             }
